@@ -14,6 +14,16 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="543.0" prefWidth="550.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.ControlVista">
    <children>
+      <Pane fx:id="paneListaJugador" layoutX="6.0" layoutY="145.0" prefHeight="330.0" prefWidth="540.0">
+         <children>
+            <Label layoutX="146.0" layoutY="14.0" prefHeight="71.0" prefWidth="249.0" text="Jugadores">
+               <font>
+                  <Font size="49.0" />
+               </font>
+            </Label>
+            <ListView fx:id="listaJugadores" layoutX="121.0" layoutY="85.0" prefHeight="240.0" prefWidth="273.0" />
+         </children>
+      </Pane>
       <Pane prefHeight="149.0" prefWidth="550.0">
          <children>
             <ImageView fitHeight="148.0" fitWidth="550.0" layoutY="-2.0" pickOnBounds="true">
@@ -78,7 +88,7 @@
             </Button>
          </children>
       </Pane>
-      <Pane fx:id="paneArena" layoutY="125.0" prefHeight="357.0" prefWidth="550.0">
+      <Pane fx:id="paneArena" layoutY="125.0" prefHeight="357.0" prefWidth="550.0" visible="false">
          <children>
             <ImageView fx:id="arena" fitHeight="387.0" fitWidth="550.0" layoutY="28.0" pickOnBounds="true" preserveRatio="true">
                <image>
@@ -92,6 +102,8 @@
       <HBox fx:id="paneOpciones" layoutX="1.0" layoutY="488.0" prefHeight="55.0" prefWidth="550.0">
          <children>
             <Button fx:id="Volver" mnemonicParsing="false" onAction="#volverInicio" text="Volver" />
+            <Label fx:id="puntaje" text="Puntaje:" />
+            <Button fx:id="guardar" mnemonicParsing="false" text="Guardar" />
          </children>
       </HBox>
    </children>

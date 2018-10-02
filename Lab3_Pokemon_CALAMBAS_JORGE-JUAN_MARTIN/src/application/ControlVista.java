@@ -16,6 +16,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
@@ -50,17 +52,27 @@ public class ControlVista {
 	@FXML
 	private Pane paneListaPokemon;
 	@FXML
+	private Pane paneListaJugador;
+	@FXML
 	private HBox paneOpciones;
 	@FXML
+	private ListView listaJugadores;
+	@FXML
 	private ListView listapokemon;
-
+	@FXML
+	private Label puntaje;
+	@FXML
+	private Button guardar;
+	
 	private int tipoEntrenamiento;
 
 	private ObservableList<String> dataLista = FXCollections.observableArrayList();
+	private ObservableList<String> dataLista2 = FXCollections.observableArrayList();
 
 	private Timeline timeLineAnimation;
 
 	private Main m;
+	private String nombreJugador;
 
 	public void initialize() {
 		
@@ -69,7 +81,7 @@ public class ControlVista {
 		m.CrearPokemon();
 		timeLineAnimation=new Timeline();
 		escogerTipoEntrenamientoPokemon();//modifique estabadespues del main
-
+		mensajeConfirmacionUsuario();
 	}
 	
 	public void escogerTipoEntrenamientoPokemon() {
@@ -100,6 +112,7 @@ public class ControlVista {
 		listapokemon.getItems().removeAll(dataLista);
 		paneArena.setVisible(false);
 		panelinicio.setVisible(false);
+		paneOpciones.setVisible(false);
 		paneListaPokemon.setVisible(true);
 		for (int i = 0; i < m.darCampoEntrenamiento().darPokemones().length; i++) {
 			dataLista.add(m.darCampoEntrenamiento().darPokemones()[i].getNombre());
@@ -120,6 +133,7 @@ public class ControlVista {
 	}
 	
 	public void tipoEntrenamiento(int tipo, String nombre) {
+	//	paneOpciones.setVisible(true);
 		if (tipo == CampoEntrenamiento.LANZAR) {
 			Pokemon p = m.darCampoEntrenamiento().buscarPokemon(nombre);
 			if(p!=null) {
@@ -166,7 +180,7 @@ public class ControlVista {
 			@Override
 			public void handle(ActionEvent arg0) {
 				pokemon.setLayoutX(pokemon.getLayoutX() + aumento);
-
+				puntaje.setText("Puntaje: "+m.darCampoEntrenamiento().calcularPuntajeLanzamiento());
 				if (pokemon.getLayoutX() <= limite) {
 					timeLineAnimation.stop();
 					timeLineAnimation.onFinishedProperty();
@@ -202,7 +216,7 @@ public class ControlVista {
 			public void handle(ActionEvent arg0) {
 				pokemon.setLayoutX(pokemon.getLayoutX() + aumento);
 				condicionesAtraparPokemon(poke, limite);
-				System.out.println(poke.isEstado() +"    "+m.darCampoEntrenamiento().darPosicionBander());
+		//		System.out.println(poke.isEstado() +"    "+m.darCampoEntrenamiento().darPosicionBander());
 			}
 		}));
 		timeLineAnimation.setCycleCount(Timeline.INDEFINITE);
@@ -227,8 +241,10 @@ public class ControlVista {
 					File p = new File("img/p0.gif");
 					Image pokem = new Image(p.toURI().toString());
 					pokemon.setImage(pokem);
-					mensajeAtrapar(1, poke);
-				}
+					m.darCampoEntrenamiento().aumentarPuntajeAtrapar();
+					mensajeVolverAJugar();
+				//	mensajeNombreUsuario();
+					}
 			});
 		} else {
 			pokemon.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -236,14 +252,63 @@ public class ControlVista {
 				@Override
 				public void handle(MouseEvent event) {
 					timeLineAnimation.stop();
-					mensajeAtrapar(2, poke);
+					mensajeNoAtrapoPokemon(poke);;
 				}
 			});
 
 		}
 	}
+	
+	public boolean mensajeVolverAJugar() {
+		boolean juego;
+		Alert confirmar=new Alert(AlertType.CONFIRMATION);
+		confirmar.setTitle("Volver a Jugar");
+		confirmar.setHeaderText(null);
+		confirmar.setContentText("Desea volver a jugar presione Aceptar\nSi desea salir y guardar presiones Cancelar");
+		
+		Optional<ButtonType> resultado=confirmar.showAndWait();
+		if(resultado.get()==ButtonType.OK) {
+			ListaPokemon();
+			puntaje.setText("Puntaje: "+m.darCampoEntrenamiento().getPuntajeAtrapar());
+		}
+		else {
+		m.darCampoEntrenamiento().agregarUnJugador(nombreJugador, m.darCampoEntrenamiento().getPuntajeLanzar(), m.darCampoEntrenamiento().getPuntajeAtrapar());
 
-	public void mensajeAtrapar(int i, Pokemon poke) {
+		volverInicio();
+
+		}
+		juego=true;
+		
+		return juego;
+	}
+
+	public void mensajeNombreUsuario() {
+		TextInputDialog dialogo = new TextInputDialog();
+		dialogo.setContentText("Escribe su nombre");
+			try {
+				String nombre = dialogo.showAndWait().get();
+				if(nombre!=null) {
+					//m.darCampoEntrenamiento().agregarUnJugador(nombreJugador);
+					nombreJugador=nombre;
+					volverInicio();
+				}
+			}
+			catch(NoSuchElementException e) {
+				mensajeNombreUsuario();
+			}
+		
+	}
+	
+	public void mensajeNoAtrapoPokemon(Pokemon poke) {
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Pokemon");
+		alert.setHeaderText(null);
+		alert.setContentText("Ya no puedes atrapar al pokemon");
+		alert.show();
+		
+	}
+	
+/*	public void mensajeAtrapar(int i, Pokemon poke) {
 		if (i == 1) {
 			TextInputDialog dialogo = new TextInputDialog();
 			dialogo.setContentText("Felicidades atrapastes a tu pokemon \n" + "Escribe tu nombre");
@@ -265,12 +330,12 @@ public class ControlVista {
 			alert.setHeaderText(null);
 			alert.setContentText("Ya no puedes atrapar al pokemon");
 			alert.show();
-			;
+			
 		}
 
 	}
 
-	
+	*/
 
 	public void colocarBandera() {
 		m.darCampoEntrenamiento().GenerarposicionBandera();
@@ -284,20 +349,43 @@ public class ControlVista {
 
 
 	public void mensajeDelRecorrido() {
-		Alert alert = new Alert(AlertType.INFORMATION);
+		Alert alert = new Alert(AlertType.CONFIRMATION);
 		alert.setTitle("Total Recorrido");
 		alert.setHeaderText(null);
 		alert.setContentText(m.darCampoEntrenamiento().darRecorridoTotal()+"\n con una velocidad de "+m.darCampoEntrenamiento().darvelocidadDelJuego()+ " m/s");
 		alert.show();
+	
+			m.darCampoEntrenamiento().agregarUnJugador(nombreJugador, m.darCampoEntrenamiento().getPuntajeLanzar(), m.darCampoEntrenamiento().getPuntajeAtrapar());
+	
+
 	}
 	
+	
+	public void mensajeConfirmacionUsuario() {
+		Alert confirmar=new Alert(AlertType.CONFIRMATION);
+		confirmar.setTitle("Usuario");
+		confirmar.setHeaderText(null);
+		confirmar.setContentText("Para registrarse presione Aceptar\nSi ya esta registrado presione Cancelar");
+		
+		Optional<ButtonType> resultado=confirmar.showAndWait();
+		if(resultado.get()==ButtonType.OK) {
+			System.out.println("acepta");
+			mensajeNombreUsuario();
+		}
+		else {
+			System.out.println("cancela");
+			paneListaJugador.setVisible(true);
+
+		}
+	}
 	public void volverInicio() {
+		paneOpciones.setVisible(false);
 		timeLineAnimation.stop();
 		paneArena.setVisible(false);
 		paneListaPokemon.setVisible(false);
-		paneOpciones.setVisible(false);
 		panelinicio.setVisible(true);
-		
+		m.darCampoEntrenamiento().reiniciarPuntajeLanzar();
+		puntaje.setText("Puntaje:");
 //		timeLineAnimation=new Timeline();
 	}
 
